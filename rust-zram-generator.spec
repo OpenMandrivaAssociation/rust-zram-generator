@@ -10,11 +10,11 @@ Group:		System/Libraries
 License:	MIT
 URL:		https://crates.io/crates/zram-generator
 Source0:	%{crates_source}
-ExclusiveArch:	%{rust_arches}
-BuildRequires:	rust-packaging
+ExclusiveArch:  %{rust_arches}
 %if %{__cargo_skip_build}
-BuildArch:	noarch
+BuildArch:      noarch
 %endif
+BuildRequires:  rust-packaging
 
 %global _description %{expand:
 This is a systemd unit generator that creates a unit file to create a
