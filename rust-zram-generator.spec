@@ -61,7 +61,6 @@ mkdir -p %{buildroot}%{_systemdgeneratordir}
 mv -v %{buildroot}%{_bindir}/zram-generator %{buildroot}%{_systemdgeneratordir}/
 install -Dpm0644 -t %{buildroot}%{_unitdir} units/systemd-zram-setup@.service
 install -Dpm0644 -t %{buildroot}%{_prefix}/lib/systemd %{SOURCE1}
-install -Dpm0644 -t %{buildroot}%{_mandir}/man5 man/zram-generator.conf.5
 
 %if %{with check}
 %check
