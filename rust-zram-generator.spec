@@ -10,6 +10,7 @@ Group:		System/Libraries
 License:	MIT
 URL:		https://crates.io/crates/zram-generator
 Source0:	%{crates_source}
+Source1:        zram-generator.conf
 ExclusiveArch:  %{rust_arches}
 %if %{__cargo_skip_build}
 BuildArch:      noarch
@@ -26,6 +27,7 @@ zram device. To activate, copy
 
 %package -n %{crate}
 Summary:	%{summary}
+Recommends:     /sbin/zramctl
 
 %description -n %{crate} %{_description}
 
@@ -33,10 +35,13 @@ Summary:	%{summary}
 %license LICENSE
 %doc zram-generator.conf.example
 %doc README.md TODO
+%{_prefix}/lib/systemd/zram-generator.conf
 %{_systemdgeneratordir}/zram-generator
+%{_unitdir}/systemd-zram-setup@.service
 
 %prep
 %autosetup -n %{crate}-%{version_no_tilde} -p1
+cp -a %{S:1} .
 %cargo_prep
 
 %generate_buildrequires
@@ -44,13 +49,19 @@ Summary:	%{summary}
 echo 'systemd-rpm-macros'
 
 %build
+export SYSTEMD_UTIL_DIR=%{_systemd_util_dir}
 %cargo_build
+make systemd_service SYSTEMD_SYSTEM_UNIT_DIR=%{_unitdir} SYSTEMD_SYSTEM_GENERATOR_DIR=%{_systemdgeneratordir}
 
 %install
+export SYSTEMD_UTIL_DIR=%{_systemd_util_dir}
 %cargo_install
-
+	
 mkdir -p %{buildroot}%{_systemdgeneratordir}
 mv -v %{buildroot}%{_bindir}/zram-generator %{buildroot}%{_systemdgeneratordir}/
+install -Dpm0644 -t %{buildroot}%{_unitdir} units/systemd-zram-setup@.service
+install -Dpm0644 -t %{buildroot}%{_prefix}/lib/systemd %{SOURCE1}
+install -Dpm0644 -t %{buildroot}%{_mandir}/man5 man/zram-generator.conf.5
 
 %if %{with check}
 %check
