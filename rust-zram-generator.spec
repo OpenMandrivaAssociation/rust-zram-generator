@@ -1,4 +1,4 @@
-%bcond_without check
+%bcond_with check
 %global crate zram-generator
 
 Name:		rust-%{crate}
