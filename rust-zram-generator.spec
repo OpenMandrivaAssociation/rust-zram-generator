@@ -2,14 +2,14 @@
 %global crate zram-generator
 
 Name:		rust-%{crate}
-Version:	0.3.2
+Version:	1.1.1
 Release:	1
 Summary:	Systemd unit generator for zram devices
 Group:		System/Libraries
 # Upstream license specification: MIT
 License:	MIT
 URL:		https://crates.io/crates/zram-generator
-Source0:	%{crates_source}
+Source0:	https://github.com/systemd/zram-generator/archive/refs/tags/v%{version}.tar.gz
 Source1:        zram-generator.conf
 ExclusiveArch:  %{rust_arches}
 %if %{__cargo_skip_build}
@@ -71,12 +71,14 @@ cp -a %{S:1} .
 
 %generate_buildrequires
 %cargo_generate_buildrequires
+echo 'make'
+echo 'ronn'
 echo 'systemd-rpm-macros'
 
 %build
 export SYSTEMD_UTIL_DIR=%{_systemd_util_dir}
 %cargo_build
-make systemd_service SYSTEMD_SYSTEM_UNIT_DIR=%{_unitdir} SYSTEMD_SYSTEM_GENERATOR_DIR=%{_systemdgeneratordir}
+make systemd-service SYSTEMD_SYSTEM_UNIT_DIR=%{_unitdir} SYSTEMD_SYSTEM_GENERATOR_DIR=%{_systemdgeneratordir}
 
 %install
 export SYSTEMD_UTIL_DIR=%{_systemd_util_dir}
