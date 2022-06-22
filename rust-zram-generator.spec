@@ -3,7 +3,7 @@
 
 Name:		rust-%{crate}
 Version:	1.1.1
-Release:	1
+Release:	2
 Summary:	Systemd unit generator for zram devices
 Group:		System/Libraries
 # Upstream license specification: MIT
