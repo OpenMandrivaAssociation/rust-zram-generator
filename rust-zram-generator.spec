@@ -2,21 +2,21 @@
 %global crate zram-generator
 
 Name:		rust-%{crate}
-Version:	1.1.1
+Version:	1.1.2
 Release:	2
 Summary:	Systemd unit generator for zram devices
 Group:		System/Libraries
 # Upstream license specification: MIT
 License:	MIT
 URL:		https://crates.io/crates/zram-generator
-Source0:	https://github.com/systemd/zram-generator/archive/refs/tags/v%{version}.tar.gz
-Source1:        zram-generator.conf
-ExclusiveArch:  %{rust_arches}
+Source0:	https://github.com/systemd/zram-generator/archive/refs/tags/%{crate}-%{version}.tar.gz
+Source1:	zram-generator.conf
+ExclusiveArch:	%{rust_arches}
 %if %{__cargo_skip_build}
-BuildArch:      noarch
+BuildArch:	noarch
 %endif
-BuildRequires:  rust-packaging
-BuildRequires:  systemd-rpm-macros
+BuildRequires:	rust-packaging
+BuildRequires:	systemd-rpm-macros
 
 %global _description %{expand:
 This is a systemd unit generator that creates a unit file to create a
@@ -28,7 +28,7 @@ zram device. To activate, copy
 
 %package -n %{crate}
 Summary:	%{summary}
-Recommends:     /sbin/zramctl
+Recommends:	%{_bindir}/zramctl
 
 %description -n %{crate} %{_description}
 
@@ -36,32 +36,32 @@ Recommends:     /sbin/zramctl
 %license LICENSE
 %doc zram-generator.conf.example
 %doc README.md
-%{_prefix}/lib/systemd/zram-generator.conf
+%{_systemd_util_dir}/zram-generator.conf
 %{_systemdgeneratordir}/zram-generator
 %{_unitdir}/systemd-zram-setup@.service
 
-%package        devel
-Summary:        %{summary}
-BuildArch:      noarch
-	
-%description    devel %{_description}
+%package devel
+Summary:	%{summary}
+BuildArch:	noarch
+
+%description devel
 This package contains library source intended for building other packages
 which use "%{crate}" crate.
 
-%files          devel
+%files devel
 %license LICENSE
 %doc README.md
 %{cargo_registry}/%{crate}-%{version_no_tilde}/
 
-%package     -n %{name}+default-devel
-Summary:        %{summary}
-BuildArch:      noarch
+%package -n %{name}+default-devel
+Summary:	%{summary}
+BuildArch:	noarch
 
-%description -n %{name}+default-devel %{_description}
+%description -n %{name}+default-devel
 This package contains library source intended for building other packages
 which use "default" feature of "%{crate}" crate.
 
-%files       -n %{name}+default-devel
+%files -n %{name}+default-devel
 %ghost %{cargo_registry}/%{crate}-%{version_no_tilde}/Cargo.toml
 
 %prep
@@ -77,17 +77,19 @@ echo 'systemd-rpm-macros'
 
 %build
 export SYSTEMD_UTIL_DIR=%{_systemd_util_dir}
+export LC_ALL=C.UTF-8
 %cargo_build
-make systemd-service SYSTEMD_SYSTEM_UNIT_DIR=%{_unitdir} SYSTEMD_SYSTEM_GENERATOR_DIR=%{_systemdgeneratordir}
+%make_build SYSTEMD_SYSTEM_UNIT_DIR=%{_unitdir} SYSTEMD_SYSTEM_GENERATOR_DIR=%{_systemdgeneratordir} \
+  systemd-service NOMAN=1
 
 %install
 export SYSTEMD_UTIL_DIR=%{_systemd_util_dir}
+export SYSTEMD_SYSTEM_GENERATOR_DIR=%{_systemdgeneratordir}
 %cargo_install
-	
-mkdir -p %{buildroot}%{_systemdgeneratordir}
-mv -v %{buildroot}%{_bindir}/zram-generator %{buildroot}%{_systemdgeneratordir}/
-install -Dpm0644 -t %{buildroot}%{_unitdir} units/systemd-zram-setup@.service
-install -Dpm0644 -t %{buildroot}%{_prefix}/lib/systemd %{SOURCE1}
+
+rm %{buildroot}%{_bindir}/zram-generator
+%make_install SYSTEMD_SYSTEM_UNIT_DIR=%{_unitdir} SYSTEMD_SYSTEM_GENERATOR_DIR=%{_systemdgeneratordir} NOBUILD=1 NOMAN=1
+install -Dpm0644 -t %{buildroot}%{_systemd_util_dir} %{SOURCE1}
 
 %if %{with check}
 %check
